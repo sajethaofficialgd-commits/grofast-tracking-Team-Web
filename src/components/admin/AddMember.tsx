@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { UserPlus, Mail, User, Phone, Briefcase, Building, Lock } from "lucide-react";
+import { UserPlus, Mail, User, Phone, Briefcase, Building, Lock, Eye, EyeOff } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import { toast } from "sonner";
 
 const AddMember = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -193,23 +194,35 @@ const AddMember = () => {
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
                     id="password"
-                    type="text"
+                    type={showPassword ? "text" : "password"}
                     placeholder="Secure password"
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    className="pl-10 pr-24"
+                    className="pl-10 pr-32"
                     required
                     minLength={6}
                   />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={generatePassword}
-                    className="absolute right-1 top-1/2 -translate-y-1/2 h-7 text-xs"
-                  >
-                    Generate
-                  </Button>
+                  <div className="absolute right-1 top-1/2 -translate-y-1/2 flex gap-1">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="h-7 w-7 p-0"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={generatePassword}
+                      className="h-7 text-xs px-2"
+                    >
+                      Generate
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
