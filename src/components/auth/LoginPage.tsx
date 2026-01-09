@@ -1,20 +1,17 @@
 import { useState } from "react";
-import { Users, Shield, Mail, Lock, Eye, EyeOff, ArrowRight, User } from "lucide-react";
+import { Users, Shield, Mail, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
 type LoginType = "team" | "admin";
-type AuthMode = "login" | "signup";
 
 const LoginPage = () => {
-  const { signIn, signUp } = useAuth();
+  const { signIn } = useAuth();
   const [loginType, setLoginType] = useState<LoginType>("team");
-  const [authMode, setAuthMode] = useState<AuthMode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [fullName, setFullName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -23,22 +20,11 @@ const LoginPage = () => {
     setIsLoading(true);
 
     try {
-      if (authMode === "login") {
-        const { error } = await signIn(email, password);
-        if (error) {
-          toast.error(error.message);
-        } else {
-          toast.success("Logged in successfully!");
-        }
+      const { error } = await signIn(email, password);
+      if (error) {
+        toast.error(error.message);
       } else {
-        const role = loginType === "admin" ? "admin" : "team_member";
-        const { error } = await signUp(email, password, fullName, role);
-        if (error) {
-          toast.error(error.message);
-        } else {
-          toast.success("Account created! You can now log in.");
-          setAuthMode("login");
-        }
+        toast.success("Logged in successfully!");
       }
     } catch {
       toast.error("Something went wrong");
@@ -120,31 +106,13 @@ const LoginPage = () => {
           </div>
 
           <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-foreground">
-              {authMode === "login" ? "Welcome Back" : "Create Account"}
-            </h2>
+            <h2 className="text-2xl font-bold text-foreground">Welcome Back</h2>
             <p className="text-muted-foreground mt-2">
-              {authMode === "login"
-                ? `Sign in to your ${loginType === "admin" ? "admin" : "team"} account`
-                : `Register as ${loginType === "admin" ? "an admin" : "a team member"}`}
+              Sign in to your {loginType === "admin" ? "admin" : "team"} account
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            {authMode === "signup" && (
-              <div className="relative">
-                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                <Input
-                  type="text"
-                  placeholder="Full Name"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  className="pl-12 h-12"
-                  required
-                />
-              </div>
-            )}
-
             <div className="relative">
               <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
               <Input
@@ -185,21 +153,15 @@ const LoginPage = () => {
                 "Loading..."
               ) : (
                 <>
-                  {authMode === "login" ? "Sign In" : "Create Account"}
+                  Sign In
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </>
               )}
             </Button>
           </form>
 
-          <p className="text-center mt-6 text-muted-foreground">
-            {authMode === "login" ? "Don't have an account?" : "Already have an account?"}{" "}
-            <button
-              onClick={() => setAuthMode(authMode === "login" ? "signup" : "login")}
-              className="text-primary font-medium hover:underline"
-            >
-              {authMode === "login" ? "Sign up" : "Sign in"}
-            </button>
+          <p className="text-center mt-6 text-muted-foreground text-sm">
+            Contact your administrator if you need an account
           </p>
         </div>
       </div>
