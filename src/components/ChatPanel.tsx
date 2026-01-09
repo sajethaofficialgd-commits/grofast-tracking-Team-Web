@@ -1,5 +1,19 @@
 import { useState, useRef, useEffect } from "react";
 import { MessageCircle, Send } from "lucide-react";
+import { z } from "zod";
+import { toast } from "sonner";
+
+// Input validation schema
+const messageSchema = z.object({
+  text: z.string()
+    .min(1, "Message cannot be empty")
+    .max(5000, "Message must be less than 5000 characters")
+    .trim()
+    .refine(
+      (val) => !/<script|javascript:|onerror=|onclick=/i.test(val),
+      "Message contains invalid content"
+    ),
+});
 
 interface Message {
   id: number;
@@ -34,6 +48,7 @@ const ChatPanel = () => {
       timestamp: "10:35 AM",
     },
   ]);
+  const [lastMessageTime, setLastMessageTime] = useState(0);
 
   const chatEndRef = useRef<HTMLDivElement>(null);
 
@@ -42,11 +57,26 @@ const ChatPanel = () => {
   }, [messages]);
 
   const handleSend = () => {
-    if (!input.trim()) return;
+    const trimmedInput = input.trim();
+    if (!trimmedInput) return;
+
+    // Rate limiting - prevent spam (1 message per second)
+    const now = Date.now();
+    if (now - lastMessageTime < 1000) {
+      toast.error("Please wait before sending another message");
+      return;
+    }
+
+    // Validate input
+    const result = messageSchema.safeParse({ text: trimmedInput });
+    if (!result.success) {
+      toast.error(result.error.errors[0]?.message || "Invalid message");
+      return;
+    }
 
     const newMessage: Message = {
       id: Date.now(),
-      text: input,
+      text: result.data.text,
       sender: "user",
       name: "You",
       timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
@@ -54,6 +84,7 @@ const ChatPanel = () => {
 
     setMessages([...messages, newMessage]);
     setInput("");
+    setLastMessageTime(now);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
