@@ -9,7 +9,10 @@ import TeamDetails from "@/components/admin/TeamDetails";
 import AddMember from "@/components/admin/AddMember";
 import Approvals from "@/components/admin/Approvals";
 import CalendarView from "@/components/CalendarView";
-import ChatPanel from "@/components/ChatPanel";
+import TeamDashboard from "@/components/team/TeamDashboard";
+import WorkUpdateForm from "@/components/team/WorkUpdateForm";
+import LearningForm from "@/components/team/LearningForm";
+import TeamChatPanel from "@/components/team/TeamChatPanel";
 
 const MainApp = () => {
   const { user, userRole, isLoading } = useAuth();
@@ -36,17 +39,17 @@ const MainApp = () => {
         case "add-member": return <AddMember />;
         case "approvals": return <Approvals />;
         case "calendar": return <CalendarView />;
-        case "chat": return <ChatPanel />;
+        case "chat": return <TeamChatPanel />;
         default: return <AdminDashboard />;
       }
     } else {
       switch (activeView) {
-        case "dashboard": return <div className="text-2xl font-bold">Team Dashboard - Coming Soon</div>;
-        case "work-update": return <div className="text-2xl font-bold">Work Update - Coming Soon</div>;
-        case "learning": return <div className="text-2xl font-bold">Learning - Coming Soon</div>;
-        case "chat": return <ChatPanel />;
+        case "dashboard": return <TeamDashboard />;
+        case "work-update": return <WorkUpdateForm />;
+        case "learning": return <LearningForm />;
+        case "chat": return <TeamChatPanel />;
         case "calendar": return <CalendarView />;
-        default: return <div className="text-2xl font-bold">Team Dashboard</div>;
+        default: return <TeamDashboard />;
       }
     }
   };
