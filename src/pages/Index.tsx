@@ -2,22 +2,36 @@ import { useAuth, AuthProvider } from "@/contexts/AuthContext";
 import LoginPage from "@/components/auth/LoginPage";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/layout/AppSidebar";
-import { useState } from "react";
-import AdminDashboard from "@/components/admin/AdminDashboard";
-import TeamMembers from "@/components/admin/TeamMembers";
-import TeamDetails from "@/components/admin/TeamDetails";
-import AddMember from "@/components/admin/AddMember";
-import CalendarView from "@/components/CalendarView";
-import TeamDashboard from "@/components/team/TeamDashboard";
-import WorkUpdateForm from "@/components/team/WorkUpdateForm";
-import LearningForm from "@/components/team/LearningForm";
-import TeamChatPanel from "@/components/team/TeamChatPanel";
-import AnalyticsDashboard from "@/components/admin/AnalyticsDashboard";
-import LeaveApprovals from "@/components/admin/LeaveApprovals";
-import ProjectManagement from "@/components/admin/ProjectManagement";
-import TaskManagement from "@/components/admin/TaskManagement";
-import AttendanceTracker from "@/components/attendance/AttendanceTracker";
-import LeaveRequestForm from "@/components/leave/LeaveRequestForm";
+import { useState, lazy, Suspense } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+
+// Lazy loading components to improve performance
+const AdminDashboard = lazy(() => import("@/components/admin/AdminDashboard"));
+const TeamMembers = lazy(() => import("@/components/admin/TeamMembers"));
+const TeamDetails = lazy(() => import("@/components/admin/TeamDetails"));
+const AddMember = lazy(() => import("@/components/admin/AddMember"));
+const CalendarView = lazy(() => import("@/components/CalendarView"));
+const TeamDashboard = lazy(() => import("@/components/team/TeamDashboard"));
+const WorkUpdateForm = lazy(() => import("@/components/team/WorkUpdateForm"));
+const LearningForm = lazy(() => import("@/components/team/LearningForm"));
+const TeamChatPanel = lazy(() => import("@/components/team/TeamChatPanel"));
+const AnalyticsDashboard = lazy(() => import("@/components/admin/AnalyticsDashboard"));
+const LeaveApprovals = lazy(() => import("@/components/admin/LeaveApprovals"));
+const ProjectManagement = lazy(() => import("@/components/admin/ProjectManagement"));
+const TaskManagement = lazy(() => import("@/components/admin/TaskManagement"));
+const AttendanceTracker = lazy(() => import("@/components/attendance/AttendanceTracker"));
+const LeaveRequestForm = lazy(() => import("@/components/leave/LeaveRequestForm"));
+
+// Loading fallback component
+const PageLoader = () => (
+  <div className="space-y-4 w-full p-4">
+    <Skeleton className="h-[200px] w-full rounded-xl" />
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <Skeleton className="h-[300px] w-full rounded-xl" />
+      <Skeleton className="h-[300px] w-full rounded-xl" />
+    </div>
+  </div>
+);
 
 const MainApp = () => {
   const { user, userRole, isLoading } = useAuth();
@@ -76,7 +90,9 @@ const MainApp = () => {
             </h2>
           </header>
           <div className="flex-1 p-6 overflow-auto">
-            {renderContent()}
+            <Suspense fallback={<PageLoader />}>
+              {renderContent()}
+            </Suspense>
           </div>
         </main>
       </div>
