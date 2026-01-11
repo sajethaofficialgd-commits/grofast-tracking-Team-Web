@@ -83,6 +83,42 @@ export type Database = {
         }
         Relationships: []
       }
+      attendance_sessions: {
+        Row: {
+          check_in_photo: string | null
+          check_in_time: string
+          check_out_photo: string | null
+          check_out_time: string | null
+          created_at: string
+          date: string
+          duration_minutes: number | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          check_in_photo?: string | null
+          check_in_time: string
+          check_out_photo?: string | null
+          check_out_time?: string | null
+          created_at?: string
+          date?: string
+          duration_minutes?: number | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          check_in_photo?: string | null
+          check_in_time?: string
+          check_out_photo?: string | null
+          check_out_time?: string | null
+          created_at?: string
+          date?: string
+          duration_minutes?: number | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       chat_group_members: {
         Row: {
           group_id: string
@@ -211,6 +247,57 @@ export type Database = {
         }
         Relationships: []
       }
+      leave_requests: {
+        Row: {
+          attachment_url: string | null
+          created_at: string
+          end_date: string | null
+          end_time: string | null
+          id: string
+          reason: string
+          review_notes: string | null
+          reviewed_by: string | null
+          start_date: string
+          start_time: string | null
+          status: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          attachment_url?: string | null
+          created_at?: string
+          end_date?: string | null
+          end_time?: string | null
+          id?: string
+          reason: string
+          review_notes?: string | null
+          reviewed_by?: string | null
+          start_date: string
+          start_time?: string | null
+          status?: string
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          attachment_url?: string | null
+          created_at?: string
+          end_date?: string | null
+          end_time?: string | null
+          id?: string
+          reason?: string
+          review_notes?: string | null
+          reviewed_by?: string | null
+          start_date?: string
+          start_time?: string | null
+          status?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       meetings: {
         Row: {
           attendees: string[] | null
@@ -324,6 +411,77 @@ export type Database = {
         }
         Relationships: []
       }
+      project_members: {
+        Row: {
+          id: string
+          joined_at: string
+          project_id: string
+          role: string | null
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          joined_at?: string
+          project_id: string
+          role?: string | null
+          user_id: string
+        }
+        Update: {
+          id?: string
+          joined_at?: string
+          project_id?: string
+          role?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_members_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      projects: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string | null
+          end_date: string | null
+          id: string
+          name: string
+          progress: number | null
+          start_date: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          name: string
+          progress?: number | null
+          start_date?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          name?: string
+          progress?: number | null
+          start_date?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       tasks: {
         Row: {
           assigned_by: string | null
@@ -332,6 +490,7 @@ export type Database = {
           description: string | null
           due_date: string | null
           id: string
+          project_id: string | null
           status: Database["public"]["Enums"]["task_status"]
           title: string
           updated_at: string
@@ -343,6 +502,7 @@ export type Database = {
           description?: string | null
           due_date?: string | null
           id?: string
+          project_id?: string | null
           status?: Database["public"]["Enums"]["task_status"]
           title: string
           updated_at?: string
@@ -354,11 +514,20 @@ export type Database = {
           description?: string | null
           due_date?: string | null
           id?: string
+          project_id?: string | null
           status?: Database["public"]["Enums"]["task_status"]
           title?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "tasks_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
