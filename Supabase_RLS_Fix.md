@@ -1,0 +1,131 @@
+# Supabase Database Permissions Fix
+
+The "Fail to Update" errors are happening because the database tables are locked down (Row Level Security is enabled by default in Supabase, but no policies have been created to allow users to write data).
+
+**You must apply the following SQL code to your Supabase project to unlock these features.**
+
+## Instructions
+
+1.  Go to your [Supabase Dashboard](https://supabase.com/dashboard).
+2.  Select your project (`poatldvuvyhteenqrpka`).
+3.  Go to the **SQL Editor** (icon on the left).
+4.  Click **New Query**.
+5.  **Copy and Paste** the entire SQL block below into the editor.
+6.  Click **Run** (bottom right).
+7.  Verify that it says "Success" or creates the policies.
+
+## SQL Code to Run
+
+```sql
+-- Enable RLS on all tables
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.user_roles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.attendance_sessions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.work_updates ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.learning_updates ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.leave_requests ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.chat_groups ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.chat_group_members ENABLE ROW LEVEL SECURITY;
+
+-- Profiles Policies
+DROP POLICY IF EXISTS "Users can view their own profile" ON public.profiles;
+CREATE POLICY "Users can view their own profile" ON public.profiles
+  FOR SELECT USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can update their own profile" ON public.profiles;
+CREATE POLICY "Users can update their own profile" ON public.profiles
+  FOR UPDATE USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can insert their own profile" ON public.profiles;
+CREATE POLICY "Users can insert their own profile" ON public.profiles
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- User Roles Policies
+DROP POLICY IF EXISTS "Users can view their own role" ON public.user_roles;
+CREATE POLICY "Users can view their own role" ON public.user_roles
+  FOR SELECT USING (auth.uid() = user_id);
+
+-- Attendance Sessions Policies
+DROP POLICY IF EXISTS "Users can view their own attendance" ON public.attendance_sessions;
+CREATE POLICY "Users can view their own attendance" ON public.attendance_sessions
+  FOR SELECT USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can insert their own attendance" ON public.attendance_sessions;
+CREATE POLICY "Users can insert their own attendance" ON public.attendance_sessions
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can update their own attendance" ON public.attendance_sessions;
+CREATE POLICY "Users can update their own attendance" ON public.attendance_sessions
+  FOR UPDATE USING (auth.uid() = user_id);
+
+-- Work Updates Policies
+DROP POLICY IF EXISTS "Users can view their own work updates" ON public.work_updates;
+CREATE POLICY "Users can view their own work updates" ON public.work_updates
+  FOR SELECT USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can insert their own work updates" ON public.work_updates;
+CREATE POLICY "Users can insert their own work updates" ON public.work_updates
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can update their own work updates" ON public.work_updates;
+CREATE POLICY "Users can update their own work updates" ON public.work_updates
+  FOR UPDATE USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can delete their own work updates" ON public.work_updates;
+CREATE POLICY "Users can delete their own work updates" ON public.work_updates
+  FOR DELETE USING (auth.uid() = user_id);
+
+-- Learning Updates Policies
+DROP POLICY IF EXISTS "Users can view their own learning updates" ON public.learning_updates;
+CREATE POLICY "Users can view their own learning updates" ON public.learning_updates
+  FOR SELECT USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can insert their own learning updates" ON public.learning_updates;
+CREATE POLICY "Users can insert their own learning updates" ON public.learning_updates
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can update their own learning updates" ON public.learning_updates;
+CREATE POLICY "Users can update their own learning updates" ON public.learning_updates
+  FOR UPDATE USING (auth.uid() = user_id);
+
+-- Leave Requests Policies
+DROP POLICY IF EXISTS "Users can view their own leave requests" ON public.leave_requests;
+CREATE POLICY "Users can view their own leave requests" ON public.leave_requests
+  FOR SELECT USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can insert their own leave requests" ON public.leave_requests;
+CREATE POLICY "Users can insert their own leave requests" ON public.leave_requests
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Admins can view all leave requests" ON public.leave_requests;
+CREATE POLICY "Admins can view all leave requests" ON public.leave_requests
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM public.user_roles 
+      WHERE user_id = auth.uid() AND role = 'admin'
+    )
+  );
+
+DROP POLICY IF EXISTS "Admins can update all leave requests" ON public.leave_requests;
+CREATE POLICY "Admins can update all leave requests" ON public.leave_requests
+  FOR UPDATE USING (
+    EXISTS (
+      SELECT 1 FROM public.user_roles 
+      WHERE user_id = auth.uid() AND role = 'admin'
+    )
+  );
+
+-- Chat Groups & Messages
+DROP POLICY IF EXISTS "Everyone can view chat groups" ON public.chat_groups;
+CREATE POLICY "Everyone can view chat groups" ON public.chat_groups
+  FOR SELECT USING (true); 
+
+DROP POLICY IF EXISTS "Users can insert messages" ON public.messages;
+CREATE POLICY "Users can insert messages" ON public.messages
+  FOR INSERT WITH CHECK (auth.uid() = sender_id);
+
+DROP POLICY IF EXISTS "Users can view messages" ON public.messages;
+CREATE POLICY "Users can view messages" ON public.messages
+  FOR SELECT USING (true);
+```

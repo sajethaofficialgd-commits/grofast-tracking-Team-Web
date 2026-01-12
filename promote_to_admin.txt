@@ -1,0 +1,22 @@
+-- SET YOUR EMAIL HERE to promote yourself to Admin
+-- Replace 'example@email.com' with your actual email address
+DO $$
+DECLARE
+  target_email text := 'example@email.com'; -- <--- CHANGE THIS EMAIL
+  target_user_id uuid;
+BEGIN
+  -- Find the user ID based on email
+  SELECT id INTO target_user_id FROM auth.users WHERE email = target_email;
+
+  IF target_user_id IS NOT NULL THEN
+    -- Insert or Update user_roles to make them an admin
+    INSERT INTO public.user_roles (user_id, role)
+    VALUES (target_user_id, 'admin')
+    ON CONFLICT (user_id) 
+    DO UPDATE SET role = 'admin';
+    
+    RAISE NOTICE 'User % is now an Admin.', target_email;
+  ELSE
+    RAISE NOTICE 'User with email % not found.', target_email;
+  END IF;
+END $$;

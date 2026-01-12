@@ -29,13 +29,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         .select("role")
         .eq("user_id", userId)
         .maybeSingle();
-      
+
       if (error) {
         console.error("Error fetching user role:", error);
         setUserRole(null);
         return;
       }
-      
+
       setUserRole(data?.role as UserRole || null);
     } catch (err) {
       console.error("Unexpected error in fetchUserRole:", err);
@@ -44,20 +44,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
-    console.log("Auth Provider initializing...");
-    
+    // Safety timeout to prevent infinite loading
+    const safetyTimeout = setTimeout(() => {
+      if (isLoading) {
+        console.warn("Auth loading timed out - forcing app load");
+        setIsLoading(false);
+      }
+    }, 5000);
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log("Auth state change:", event, session?.user?.id);
         setSession(session);
         setUser(session?.user ?? null);
-        
+
         try {
           if (session?.user) {
             await fetchUserRole(session.user.id);
           } else {
             setUserRole(null);
           }
+        } catch (e) {
+          console.error("Error in auth state change:", e);
         } finally {
           setIsLoading(false);
         }
@@ -69,7 +77,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        fetchUserRole(session.user.id).finally(() => setIsLoading(false));
+        fetchUserRole(session.user.id)
+          .catch(e => console.error("Error fetching role:", e))
+          .finally(() => setIsLoading(false));
       } else {
         setIsLoading(false);
       }
@@ -78,7 +88,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setIsLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(safetyTimeout);
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {
@@ -87,15 +100,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signUp = async (email: string, password: string, fullName: string) => {
-    const { data, error } = await supabase.auth.signUp({ 
-      email, 
+    const { data, error } = await supabase.auth.signUp({
+      email,
       password,
       options: {
         emailRedirectTo: window.location.origin,
         data: { full_name: fullName }
       }
     });
-    
+
     if (!error && data.user) {
       // Create profile for the user
       await supabase.from("profiles").insert({
@@ -104,7 +117,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         full_name: fullName
       });
     }
-    
+
     return { error: error as Error | null };
   };
 
